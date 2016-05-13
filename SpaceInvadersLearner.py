@@ -1,5 +1,9 @@
+from pygame.constants import *
 import spaceinvaders
 import pygame
+import numpy as np
+import neuralNetwork as nn
+
 
 
 screen = spaceinvaders.SCREEN
@@ -49,10 +53,25 @@ def updateRects(arrayToUse, timeToUpdate,valueToUse):
                     continue
                 inputRects[i][j].friendOrFoe=valueToUse
                 inputRects[i][j].lastTimeUpdated=timeToUpdate
-modelInputs=[]
+modelInputs=np.zeros((totalWidth/debugRectWidth)*(totalHeight/debugRectHeight))
+network = nn.NeuralNetwork(np.array([[600*800/5,100],[100,10],[10,2]]))
+debugKeys={
+        K_LEFT:False,
+        K_RIGHT:False,
+        K_SPACE:False
+    }
 def debug(game):
+    global network
+    if(game.mainScreen or game.gameOver):
+        print("the score:{0}".format(game.score))
+        network.setFitness(game.score)
+        network.createRandomTemp()
+        game.reset(0,3)
+        game.startGame=True
+        game.gameOver=False
+        game.mainScreen=False
+        return
     global modelInputs
-    modelInputs=[]
     global totalLastTimeUpdated
     increaseTotalLastTimeUpdated()
     updateRects(game.enemies,totalLastTimeUpdated,-1)
@@ -66,11 +85,36 @@ def debug(game):
         for rect in rectList:
             if (shouldDraw):
                 rect.draw(game.screen)
+            valToInsert=0
             if (rect.lastTimeUpdated==totalLastTimeUpdated):
-                modelInputs.append(rect.friendOrFoe)
+                valToInsert = rect.friendOrFoe
             else:
-                modelInputs.append(0)
+                modelInputs[(rect.ypos/debugRectHeight)*(totalWidth/debugRectWidth)+(rect.xpos/debugRectWidth)]=valToInsert
+
+    prediction=network.predict(modelInputs)
+    #keys[K_LEFT]
+    global debugKeys
+    if(prediction[0]>0.5):
+        debugKeys[K_RIGHT]=True
+        debugKeys[K_LEFT]=False
+    else:
+        debugKeys[K_RIGHT]=False
+        debugKeys[K_LEFT]=True
+    if(prediction[1]>0.5):
+        debugKeys[K_SPACE]=True
+    else:
+        debugKeys[K_SPACE]=False
+
+
+class SpaceInvadersOverride(spaceinvaders.SpaceInvaders):
+    def __init__(self):
+        super(SpaceInvadersOverride,self).__init__()
+    def getKeys(self):
+        global debugKeys
+        return debugKeys
 if __name__ == '__main__':
+    spaceinvaders.game=SpaceInvadersOverride()
+    spaceinvaders.timeMultiplier=2
     spaceinvaders.main(debug)
 
 
