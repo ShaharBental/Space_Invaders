@@ -15,7 +15,8 @@ BLUE = (80, 255, 239)
 PURPLE = (203, 0, 255)
 RED = (237, 28, 36)
 
-SCREEN = display.set_mode((800, 600))
+screenSizes = (800, 600)
+SCREEN = display.set_mode(screenSizes)
 FONT = "fonts/space_invaders.ttf"
 IMG_NAMES = ["ship", "ship", "mystery", "enemy1_1", "enemy1_2", "enemy2_1", "enemy2_2",
              "enemy3_1", "enemy3_2", "explosionblue", "explosiongreen", "explosionpurple", "laser", "enemylaser"]
@@ -543,6 +544,11 @@ class SpaceInvaders(object):
         if sprite.groupcollide(self.enemies, self.playerGroup, True, True):
             self.gameOver = True
             self.startGame = False
+        for enemy in self.enemies:
+            if(enemy.rect.y>screenSizes[1]): #if an enemy got out of the screen
+                self.gameOver = True
+                self.startGame = False
+            break
 
         sprite.groupcollide(self.bullets, self.allBlockers, True, True)
         sprite.groupcollide(self.enemyBullets, self.allBlockers, True, True)
