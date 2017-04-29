@@ -283,6 +283,7 @@ class Text(object):
 
 class SpaceInvaders(object):
     def getKeys(self):
+        print "original get keys"
         return key.get_pressed()
     def __init__(self):
         mixer.pre_init(44100, -16, 1, 512)
@@ -376,9 +377,10 @@ class SpaceInvaders(object):
 
     def check_input(self):
         self.keys = self.getKeys()
-        for e in event.get():
+        for e in self.getEvents():
             if e.type == QUIT:
                 sys.exit()
+            # print self.keys[K_SPACE]
             if self.keys[K_SPACE]:
                 if len(self.bullets) == 0 and self.shipAlive:
                     if self.score < 1000:
@@ -564,7 +566,8 @@ class SpaceInvaders(object):
 
     def create_game_over(self, currentTime):
         self.screen.blit(self.background, (0, 0))
-        if currentTime - self.timer < 750 / timeMultiplier:
+        if currentTime -\
+                self.timer < 750 / timeMultiplier:
             self.gameOverText.draw(self.screen)
         if currentTime - self.timer > 750 / timeMultiplier and currentTime - self.timer < 1500 / timeMultiplier:
             self.screen.blit(self.background, (0, 0))
@@ -635,9 +638,11 @@ class SpaceInvaders(object):
             if(not promise is None): promise(self)
             display.update()
             self.clock.tick(60 * timeMultiplier)
+    def getEvents(self):
+        return event.get()
 
 game = SpaceInvaders()
-def main(promise=None):
-    game.main(promise)
+def main():
+    game.main()
 if __name__ == '__main__':
     main()
